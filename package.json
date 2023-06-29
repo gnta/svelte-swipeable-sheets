@@ -7,6 +7,6 @@
   "license": "MIT",
   "homepage": "https://github.com/kroniapp/svelte-swipeable-sheets",
   "peerDependencies": {
-    "svelte": "3.x"
+    "svelte": "4.x"
   }
 }
