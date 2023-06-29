@@ -9,65 +9,66 @@
 </div>
 
 <script>
-    import {touch, deltaX, deltaY} from "./utils";
+	let dialog;
+	let backdrop;
 
-    let dialog;
-    let backdrop;
+	let startX;
+	let startY;
+	let direction;
 
-    let startX;
-    let startY;
-    let direction;
+	export let fullscreen = false;
+	export let open = false;
+	export let threshold = 0.3;
+	export let backdropOpacity = 0.5;
+	export let speed = 0.2;
 
-    export let fullscreen = false;
-    export let open = false;
-    export let threshold = 0.3;
-    export let backdropOpacity = 0.5;
-    export let speed = 0.2;
+	const touch = (e) => (e.changedTouches ? e.changedTouches[0] : e);
 
-    const touchStart = e => {
-        console.log(e);
-        startX = touch(e).clientX;
-        startY = touch(e).clientY;
-    };
+	const deltaX = (e) => startX - touch(e).clientX;
 
-    const touchMove = e => {
-        if(!direction) {
-            direction = Math.abs(deltaY(e, startY)) > Math.abs(deltaX(e, startX)) ? "vertical" : "horizontal";
-        }
+	const deltaY = (e) => startY - touch(e).clientY;
 
-        if(deltaY(e, startY) < 0 && direction === "vertical" && dialog.scrollTop == 0) {
-            dialog.style.setProperty('--b', deltaY(e, startY) + 'px');
-            backdrop.style.setProperty('--o', (1 + deltaY(e, startY) / dialog.clientHeight) * backdropOpacity);
-        }
-    };
+	const touchStart = (e) => {
+		e.preventDefault();
 
-    const touchEnd = e => {
-        if(direction === "vertical") {
-            open = -deltaY(e, startY) / dialog.clientHeight < threshold;
-        }
-        startY = null;
-        direction = null;
-    };
+		startX = touch(e).clientX;
+		startY = touch(e).clientY;
+	};
 
-    $: if(dialog) {
-        dialog.onscroll = e => dialog.scrollTop == 0 && console.log(window.event);
-    }
+	const touchMove = (e) => {
+		e.preventDefault();
+		console.log('modal');
+		document.body.style.overflowY = 'hidden';
 
-    $: if(dialog && backdrop) {
-        dialog.style.setProperty('--s', speed + 's');
-        backdrop.style.setProperty('--s', speed + 's');
-    }
+		if (!direction) {
+			direction = Math.abs(deltaY(e)) > Math.abs(deltaX(e)) ? 'vertical' : 'horizontal';
+		}
 
-    $: if(dialog && backdrop && !direction) {
-        dialog.style.setProperty('--b', open
-            ? "0px"
-            : -dialog.clientHeight + "px"
-        );
-        backdrop.style.setProperty('--o', open
-            ? backdropOpacity
-            : 0
-        );
-    }
+		if (deltaY(e) < 0 && direction === 'vertical') {
+			dialog.style.setProperty('--b', deltaY(e) + 'px');
+			backdrop.style.setProperty('--o', (1 + deltaY(e) / dialog.clientHeight) * backdropOpacity);
+		}
+	};
+
+	const touchEnd = (e) => {
+		e.preventDefault();
+		document.body.style.overflowY = 'auto';
+		if (direction === 'vertical') {
+			open = -deltaY(e) / dialog.clientHeight < threshold;
+		}
+		startY = null;
+		direction = null;
+	};
+
+	$: if (dialog && backdrop) {
+		dialog.style.setProperty('--s', speed + 's');
+		backdrop.style.setProperty('--s', speed + 's');
+	}
+
+	$: if (dialog && backdrop && !direction) {
+		dialog.style.setProperty('--b', open ? '0px' : -dialog.clientHeight + 'px');
+		backdrop.style.setProperty('--o', open ? backdropOpacity : 0);
+	}
 </script>
 
 <style>
